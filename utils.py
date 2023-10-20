@@ -6,6 +6,21 @@ import matplotlib.pyplot as plt
 import traceback
 
 
+def est_scaling_factor(multiPoly: MultiPolygon, typical_max_dim: float) -> float:
+    geom_max_dim = []
+    for geom in multiPoly.geoms:
+        box = geom.minimum_rotated_rectangle
+        x, y = box.exterior.coords.xy
+        edge_lengths = (
+            Point(x[0], y[0]).distance(Point(x[1], y[1])),
+            Point(x[1], y[1]).distance(Point(x[2], y[2])),
+        )
+        geom_max_dim.append(max(edge_lengths))
+
+    scaling_factor = typical_max_dim / np.median(geom_max_dim)
+    return scaling_factor
+
+
 def marching_buffer(
     poly: Polygon,
     steps: list,
@@ -117,7 +132,7 @@ def process_buffer(
     # rotate the line 90 degrees about its centre
     cutting_tool = rotate(line_btw, 90, origin=line_btw.centroid)
     # extend the line to the edge of the polygon
-    cutting_tool = scale(cutting_tool, 100, 100, origin=cutting_tool.centroid)
+    cutting_tool = scale(cutting_tool, 10, 10, origin=cutting_tool.centroid)
     # find the points of intersection between the line and the livingroom exterior
     intersections = cutting_tool.intersection(parent_poly.geoms[0].exterior)
     # find the two intersection points which are closet to the line centroid
@@ -169,8 +184,8 @@ def process_buffer(
 
 def subdivide_room(room: MultiPolygon, min_pinch_size: float, scaling_factor: float, iterations:int=2, step_reduction_factor=10, plot:bool=False, fig=None, ax=None) -> MultiPolygon:
     steps = (
-        np.linspace(0, 10, 20) / 10 / scaling_factor * min_pinch_size  # 20 steps over 1 metre
-    )  # a set of N even steps from 1 to 10
+        np.linspace(0, 10, 20) / 10 / scaling_factor * min_pinch_size  
+    )
 
     buffer = room
     # each iteration will more precisely identify the first self-intersection - two iterations should be enough
@@ -192,12 +207,6 @@ def subdivide_room(room: MultiPolygon, min_pinch_size: float, scaling_factor: fl
     
     # process the buffer and split the original room
     room_split = process_buffer(buffer, room, plot=plot, fig=fig, ax=ax)
-    
-
-    # try:
-    #     plt.show()
-    # except Exception as e:
-    #     print(f"Error: {e}")
 
     return room_split
 
@@ -219,7 +228,6 @@ def recursive_room_subdivision(room, scaling_factor:float, min_pinch_size:int=2.
     sub_room["id"] for sub_room in sub_rooms if not sub_room["subdivided"]
     ]
 
-    # print(unprocessed_sub_rooms)
     i = 0
     while len(unprocessed_sub_rooms) > 0:
         sub_room_id = unprocessed_sub_rooms.pop(0)
