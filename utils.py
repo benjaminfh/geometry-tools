@@ -82,6 +82,7 @@ def marching_buffer(
                 print(
                     "Interescetion found at first step - reduce the step size and try again!"
                 )
+                print(traceback.print_exc())
                 return None, None
 
             if stop_before_intersection:
@@ -132,9 +133,22 @@ def process_buffer(
     # rotate the line 90 degrees about its centre
     cutting_tool = rotate(line_btw, 90, origin=line_btw.centroid)
     # extend the line to the edge of the polygon
-    cutting_tool = scale(cutting_tool, 10, 10, origin=cutting_tool.centroid)
+    cutting_tool = scale(cutting_tool, 1000, 1000, origin=cutting_tool.centroid)
     # find the points of intersection between the line and the livingroom exterior
     intersections = cutting_tool.intersection(parent_poly.geoms[0].exterior)
+
+    if plot:
+        # plot the nearest points
+        np_x = [near_points[0].x, near_points[1].x]
+        np_y = [near_points[0].y, near_points[1].y]
+        ax.scatter(np_x, np_y, marker="o", color="red")
+        # plot the line between the nearest points
+        line_x, line_y = line_btw.xy
+        ax.plot(line_x, line_y, alpha=0.8, color="red", linewidth=0.5)
+        # plot the cutting line
+        line_x, line_y = cutting_tool.xy
+        ax.plot(line_x, line_y, alpha=0.8, color="red", linewidth=0.5)
+
     # find the two intersection points which are closet to the line centroid
     inters_distances = [
         inters.distance(line_btw.centroid) for inters in intersections.geoms
@@ -153,16 +167,6 @@ def process_buffer(
     parent_poly_split = split(parent_poly.geoms[0], line_cutting)
 
     if plot:
-        # plot the nearest points
-        np_x = [near_points[0].x, near_points[1].x]
-        np_y = [near_points[0].y, near_points[1].y]
-        ax.scatter(np_x, np_y, marker="o", color="red")
-        # plot the line between the nearest points
-        line_x, line_y = line_btw.xy
-        ax.plot(line_x, line_y, alpha=0.8, color="red", linewidth=0.5)
-        # plot the cutting line
-        line_x, line_y = cutting_tool.xy
-        ax.plot(line_x, line_y, alpha=0.8, color="red", linewidth=0.5)
         # plot the cutting line intersection points
         xi = [inters.x for inters in intersections.geoms]
         yi = [inters.y for inters in intersections.geoms]
@@ -248,7 +252,7 @@ def recursive_room_subdivision(room, scaling_factor:float, min_pinch_size:int=2.
                 ax=ax,
             )
         except Exception as e:
-            print(f"Error: {e}")
+            print(traceback.print_exc())
             subdivided_rooms = None
 
         # print("Subdivided rooms: ", subdivided_rooms)
@@ -274,6 +278,7 @@ def recursive_room_subdivision(room, scaling_factor:float, min_pinch_size:int=2.
             sub_room["id"] for sub_room in sub_rooms if not sub_room["subdivided"]
         ]
 
+        # limit the number of sub division iterations to avoid infinite loops - it's hard to predict all edge cases that lead here
         i += 1
         if i == max_iters:
             reason = "max iterations reached"
