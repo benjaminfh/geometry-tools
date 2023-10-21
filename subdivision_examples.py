@@ -12,7 +12,7 @@ TEST_IDX = 6
 
 sample_file_names = [
     "fac9afc096dcb56b8731e9b6b582bdda.jpeg",  # simple case
-    "72484edaa75e2566c50c7a8134ad0e54.jpg",  # case that requires iteration on MIN_PINCH_SIZE - try 2.0
+    "72484edaa75e2566c50c7a8134ad0e54.jpg",  # case that requires iteration on MIN_PINCH_SIZE - try 2.5
     "c4e2334eedaf64fee8a74228d5b9c4c3.jpeg",  # case that buffering method fails on – pinch ratio is too small
     "d168f79355efd85e149682a1d270a817.jpg",  # 
     "7bbf71f54a75bf983fd2b811d474cb11.jpg",  # complex case - works reasonably well
