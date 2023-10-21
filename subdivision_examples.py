@@ -8,7 +8,7 @@ import traceback
 
 DOOR_WIDTH = 0.9  # meters
 MIN_PINCH_SIZE = 2.5  # meters
-TEST_IDX = 6
+TEST_IDX = 0
 
 sample_file_names = [
     "fac9afc096dcb56b8731e9b6b582bdda.jpeg",  # simple case

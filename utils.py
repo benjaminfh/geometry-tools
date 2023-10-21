@@ -145,9 +145,13 @@ def process_buffer(
         # plot the line between the nearest points
         line_x, line_y = line_btw.xy
         ax.plot(line_x, line_y, alpha=0.8, color="red", linewidth=0.5)
+        xlims = plt.xlim()
+        ylims = plt.ylim()
         # plot the cutting line
         line_x, line_y = cutting_tool.xy
         ax.plot(line_x, line_y, alpha=0.8, color="red", linewidth=0.5)
+        plt.xlim(xlims)
+        plt.ylim(ylims)
 
     # find the two intersection points which are closet to the line centroid
     inters_distances = [
